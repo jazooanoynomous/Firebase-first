@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import auth from '@react-native-firebase/auth';
-
+import SplashScreen from "react-native-splash-screen";
 import SignUpScreen from '../screens/Signup';
 import LoginScreen from '../screens/Login';
 import NotificationScreen from '../screens/NotificationScreen';
@@ -11,6 +11,7 @@ import PhotoScreen from '../screens/PhotoScreen';
 import TextScreen from '../screens/TextScreen';
 import CalculatorScreen from '../screens/Calculator';
 import LoadingScreen from '../screens/LoadingScreen';  // Create a loading screen to show while checking auth status
+import ImageGalleryScreen from '../screens/Gallery';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -33,21 +34,21 @@ const TabNavigator = () => (
 
     }}
   >
-    <Tab.Screen 
+    {/* <Tab.Screen 
       name="Notification" 
       component={NotificationScreen} 
-    />
+    /> */}
     <Tab.Screen 
       name="Image" 
       component={PhotoScreen} 
     />
     <Tab.Screen 
-      name="Text" 
+      name="Notes" 
       component={TextScreen} 
     />
     <Tab.Screen 
-      name="Calculator" 
-      component={CalculatorScreen} 
+      name="Gallery" 
+      component={ImageGalleryScreen} 
     />
   </Tab.Navigator>
 );
@@ -55,7 +56,10 @@ const TabNavigator = () => (
 const Routes = () => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
-
+  React.useEffect(()=>{
+  
+    SplashScreen.hide();        
+  },[])
   // Handle user state changes
   const onAuthStateChanged = (user) => {
     setUser(user);

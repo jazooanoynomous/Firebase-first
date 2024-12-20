@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 
 const TextScreen = () => {
   const [inputText, setInputText] = useState('');
-  const [fetchedText, setFetchedText] = useState('');
+  const [fetchedTexts, setFetchedTexts] = useState([]);
 
   useEffect(() => {
     const unsubscribe = firestore()
       .collection('texts')
-      .doc('textDoc')
-      .onSnapshot(documentSnapshot => {
-        setFetchedText(documentSnapshot.data()?.content || '');
+      .onSnapshot(querySnapshot => {
+        const texts = querySnapshot.docs.map(doc => doc.data().content);
+        setFetchedTexts(texts);
       });
 
     return () => unsubscribe();
@@ -25,8 +25,7 @@ const TextScreen = () => {
 
     firestore()
       .collection('texts')
-      .doc('textDoc')
-      .set({ content: inputText })
+      .add({ content: inputText })
       .then(() => {
         Alert.alert('Success', 'Text sent successfully!');
         setInputText(''); // Clear input after sending
@@ -39,6 +38,7 @@ const TextScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={{marginTop:20, fontSize:20, color: 'black',fontWeight: 'bold' }}> Your Notes</Text>
       <TextInput
         style={styles.input}
         placeholder="Write something..."
@@ -48,7 +48,12 @@ const TextScreen = () => {
       <TouchableOpacity onPress={handleSendText} style={styles.button}>
         <Text style={styles.buttonText}>Send</Text>
       </TouchableOpacity>
-      <Text style={styles.fetchedText}>Fetched Text: {fetchedText}</Text>
+      <Text style={{ fontSize:20, color: 'black', marginBottom:40, marginRight:130,fontWeight: 'bold' }}> Your  Existing Notes</Text>
+      <ScrollView style={styles.scrollView}>
+        {fetchedTexts.map((text, index) => (
+          <Text key={index} style={styles.fetchedText}>{text}</Text>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -62,6 +67,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
+    marginTop:50,
     width: '100%',
     height: 40,
     backgroundColor: '#f0f0f0',
@@ -73,16 +79,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
     padding: 15,
     borderRadius: 10,
-    marginBottom: 20,
-    width:'20px'
+    marginBottom: 50,
+    width: '100%',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
   },
+  scrollView: {
+    width: '100%',
+  },
   fetchedText: {
     fontSize: 18,
     color: '#000',
+    marginBottom: 10,
   },
 });
 

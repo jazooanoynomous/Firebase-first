@@ -3,7 +3,10 @@ import { View, Image, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Ale
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import PushNotification from 'react-native-push-notification';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
+const CHANNEL_ID = 'test-channel';
 const PhotoScreen = () => {
   const [imageUri, setImageUri] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -17,6 +20,29 @@ const PhotoScreen = () => {
   const requestGalleryPermission = async () => {
     const result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
     return result === RESULTS.GRANTED;
+  };
+  const createChannel = () => {
+    PushNotification.createChannel(
+      {
+        channelId: CHANNEL_ID,
+        channelName: 'Test Channel',
+        channelDescription: 'A channel for test notifications',
+        soundName: 'default',
+        importance: 4,
+        vibrate: true,
+      },
+      (created) => console.log(`createChannel returned '${created}'`)
+    );
+  };
+
+  const handleSendNotification = () => {
+    PushNotification.localNotification({
+      channelId: CHANNEL_ID,
+      title: "Success!",
+      message: "Image has been successfully uploaded!",
+      importance: 'high',
+      priority: 'high',
+    });
   };
 
   const handleImageUpload = async (response) => {
@@ -38,7 +64,7 @@ const PhotoScreen = () => {
         await reference.putFile(asset.uri);
         const url = await reference.getDownloadURL();
         setImageUri(url);
-        Alert.alert('Success', 'Image uploaded successfully');
+        handleSendNotification()
       } catch (error) {
         console.error(error);
         Alert.alert('Error', 'Failed to upload image');
